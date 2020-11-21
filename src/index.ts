@@ -84,6 +84,8 @@ async function start() {
             $('.is-typing').html(message);
         });
 
+        
+
         document.querySelector('emoji-picker')
             .addEventListener('emoji-click', e => {
                 let message: string = $('.message-input').val().toString();
