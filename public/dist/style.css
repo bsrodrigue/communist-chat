@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+* {
+    padding: 0px;
+    margin: 0px;
+}
+
+html,
+body {
+    overflow-x: hidden;
+    font-family: 'Quicksand', sans-serif;
+    background: #e8e8e8;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+header{
+    width: 100%;
+    background: #f05454;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+header p{
+    color:  white;
+    margin: 0px;
+    font-weight: bold;
+}
+
+.is-typing{
+    color: white;
+}
+
+.discussion {
+    flex-grow: 1;
+    padding: 0% 4%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+
+.discussion::-webkit-scrollbar{
+    display: none;
+}
+
+.material-shadow {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.message-card{
+    background: white;
+    padding: 15px;
+    border-radius: 5px 5px 5px 0px;
+    margin: 10px 0px;
+    display: flex;
+    flex-direction: column;
+
+    width: 75%;
+}
+
+.message-card-right{
+    border-radius: 5px 5px 0px 5px;
+    align-items: flex-end;
+    text-align: end;
+    align-self: flex-end;
+}
+
+.message-card-title{
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.message-card-content{
+    font-weight: lighter;
+    margin-bottom: 5px;
+}
+
+.message-card-time{
+    font-style: italic;
+}
+
+.text-input-wrapper{
+    display: flex;
+    width: 100%;
+}
+
+.text-input-wrapper input{
+    height: 50px;
+}
+
+input[type=text]{
+    border: none;
+    flex-grow: 1;
+    padding: 0px 15px;
+}
+
+input[type=text]:focus{
+    outline: none;
+}
+
+input[type=submit]{
+    border: none;
+    background: #30475e;
+    color: white;
+    padding: 2px 5px;
+    width: 150px;
+}
+
+input[type=submit]:focus{
+    outline: none;
+}
+
+input[type=submit]:hover{
+    background: #222831;
+}
+
+emoji-picker{
+    position: fixed;
+    bottom: 60px;
+    right: 30px;
+
+    height: 40px;
+    transition: height 0.5s ease;
+}
+
+emoji-picker:hover{
+    height: 300px;
+    transition: height 0.5s ease;
+}
