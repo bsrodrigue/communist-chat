@@ -44,6 +44,10 @@ export class MyRoom extends Room {
 
   }
 
+  onAuth (client: Client, options: any, request: any) : boolean{
+    return true;
+  }
+
   //When a new user joins the chatroom
   onJoin(client: Client, options: any) {
     let newUserNickname = options.nickName;

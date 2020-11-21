@@ -31,6 +31,16 @@ header p{
     font-weight: bold;
 }
 
+.alert{
+    position: absolute;
+    bottom: 50px;
+    width: 100%;
+    display: none;
+}
+
+
+
+
 .is-typing{
     color: white;
 }
@@ -55,16 +65,17 @@ header p{
 .message-card{
     background: white;
     padding: 15px;
-    border-radius: 5px 5px 5px 0px;
+    border-radius: 25px 25px 25px 0px;
     margin: 10px 0px;
     display: flex;
     flex-direction: column;
-
+    box-sizing: border-box;
+    text-overflow: clip;
     width: 75%;
 }
 
 .message-card-right{
-    border-radius: 5px 5px 0px 5px;
+    border-radius: 25px 25px 0px 25px;
     align-items: flex-end;
     text-align: end;
     align-self: flex-end;
@@ -123,12 +134,13 @@ emoji-picker{
     position: absolute;
     bottom: 60px;
     right: 30px;
-
+    opacity: 0.5;
     height: 40px;
-    transition: height 0.5s ease;
+    transition: all 0.5s ease;
 }
 
 emoji-picker:hover{
     height: 300px;
-    transition: height 0.5s ease;
+    transition: all 0.5s ease;
+    opacity: 1;
 }

@@ -1,7 +1,12 @@
 import * as Colyseus from 'colyseus.js';
 import 'emoji-picker-element';
 
-let client = new Colyseus.Client('ws://localhost:2567');
+let protocol = window.location.protocol.replace('http', 'ws');
+let hostname = window.location.hostname;
+let port = window.location.port;
+let endpoint = `${protocol}//${hostname}:${port}`;
+console.log(endpoint);
+let client = new Colyseus.Client(endpoint);
 let isTyping = false;
 let isTypingTimeout: NodeJS.Timeout = undefined;
 let nickName: string = "";
@@ -10,6 +15,22 @@ interface MessageCard {
     title: string;
     content: string;
     time: string;
+}
+
+
+//Shows an bootstrap Alert
+function bootstrapAlert(message: string, type: string, ms: number = 3000) {
+    let action: Function = type === "join" ? () => {
+        $('.alert-success').html(message);
+        $('.alert-success').fadeIn(ms).fadeOut(ms);
+
+    } : () => {
+        $('.alert-danger').html(message);
+        $('.alert-danger').fadeIn(ms).fadeOut(ms);
+
+    };
+
+    action();
 }
 
 //Creates a new message card and adds it to the discussion
@@ -38,6 +59,19 @@ function appendMessage(message: MessageCard) {
     $('.discussion').append(messageCard);
 }
 
+//Sends the message to the server
+function sendMessage(room: any) {
+    let finalMessage: string = $('.message-input').val().toString();
+
+    room.send('message', {
+        message: finalMessage,
+        nickName: nickName,
+    });
+
+    //Clear Input
+    $('.message-input').val("");
+}
+
 const rooms = {
     'CHAT_ROOM': 'chat-room',
 }
@@ -52,6 +86,7 @@ const messages = {
 async function start() {
 
 
+    // askNotificationPermission();
 
     while (nickName === "") {
         nickName = prompt("Please, enter your nickname");
@@ -68,23 +103,25 @@ async function start() {
             joinOptions,
         );
 
-        // room.onMessage(messages['NEW_USER'], (message: string) => {
-        //     appendMessage(message);
-        // });
+        room.onMessage(messages['NEW_USER'], (message: string) => {
+            bootstrapAlert(message, 'join');
+        });
 
         room.onMessage(messages['MESSAGE_SENT'], (message: MessageCard) => {
             appendMessage(message);
+            let discussionDiv = document.querySelector('.discussion');
+            discussionDiv.lastElementChild.scrollIntoView();
         });
 
-        // room.onMessage(messages['USER_LEFT'], (message: string) => {
-        //     appendMessage(message);
-        // });
+        room.onMessage(messages['USER_LEFT'], (message: string) => {
+            bootstrapAlert(message, 'left');
+        });
 
         room.onMessage(messages['IS_TYPING'], (message: string) => {
             $('.is-typing').html(message);
         });
 
-        
+
 
         document.querySelector('emoji-picker')
             .addEventListener('emoji-click', e => {
@@ -98,6 +135,10 @@ async function start() {
         $('.message-input').keyup(e => {
 
             clearTimeout(isTypingTimeout);
+
+            if (e.keyCode === 13) {
+                sendMessage(room);
+            }
 
             room.send('is-typing', {
                 isTyping: true,
@@ -116,18 +157,11 @@ async function start() {
         });
 
 
+
         $('.input-button').click(e => {
             e.preventDefault();
 
-            let message: string = $('.message-input').val().toString();
-
-            room.send('message', {
-                message: message,
-                nickName: nickName,
-            });
-
-            //Clear Input
-            $('.message-input').val("");
+            sendMessage(room);
         });
 
 
