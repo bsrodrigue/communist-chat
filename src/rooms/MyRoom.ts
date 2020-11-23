@@ -4,12 +4,11 @@ import moment from "moment";
 
 let userLog = new Map();
 
-interface MessageCard{
+interface UserMessageContent {
   title: string;
-  content: string;
+  body: string;
   time: string;
 }
-
 const messages = {
   'NEW_USER': 'new-user',
   'USER_LEFT': 'user-left',
@@ -26,9 +25,9 @@ export class MyRoom extends Room {
       let userMessage: string = data.message;
       let messageSentAt: string = moment().format('LT');
       
-      let newMessage: MessageCard = {
+      let newMessage: UserMessageContent = {
         title: userNickname,
-        content: userMessage,
+        body: userMessage,
         time: messageSentAt,
       }
       this.broadcast('message-sent', newMessage);
@@ -63,7 +62,7 @@ export class MyRoom extends Room {
   //When a user leaves the chatroom
   onLeave(client: Client, consented: boolean) {
     let whoLeft = userLog.get(client.id);
-    let broadcastMessage = `User ${whoLeft.nickName} left the chatroom!`;
+    let broadcastMessage = `User ${whoLeft.nickName} left the chatroom${consented&&" on his/her own"}!`;
     this.broadcast(messages['USER_LEFT'], broadcastMessage, {
       except: client,
     });

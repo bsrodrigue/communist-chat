@@ -1,70 +1,93 @@
 import * as Colyseus from 'colyseus.js';
 import 'emoji-picker-element';
 
-let protocol = window.location.protocol.replace('http', 'ws');
-let hostname = window.location.hostname;
-let port = window.location.port;
-let endpoint = `${protocol}//${hostname}:${port}`;
-console.log(endpoint);
+const protocol = window.location.protocol.replace('http', 'ws');
+const hostname = window.location.hostname;
+const port = window.location.port;
+const endpoint = `${protocol}//${hostname}:${port}`;
+
 let client = new Colyseus.Client(endpoint);
+
 let isTyping = false;
 let isTypingTimeout: NodeJS.Timeout = undefined;
-let nickName: string = "";
+let nickName = "";
 
-interface MessageCard {
+interface UserMessageContent {
     title: string;
-    content: string;
+    body: string;
     time: string;
 }
 
-
-//Shows an bootstrap Alert
-function bootstrapAlert(message: string, type: string, ms: number = 3000) {
-    let action: Function = type === "join" ? () => {
-        $('.alert-success').html(message);
-        $('.alert-success').fadeIn(ms).fadeOut(ms);
-
-    } : () => {
-        $('.alert-danger').html(message);
-        $('.alert-danger').fadeIn(ms).fadeOut(ms);
-
-    };
-
-    action();
+enum InfoMessageType{
+    Success = "success",
+    Warning = "warning",
+    Danger = "danger",
+    Info = "info",
 }
 
-//Creates a new message card and adds it to the discussion
-function appendMessage(message: MessageCard) {
-    let messageCard = document.createElement('div');
-    let messageCardTitle = document.createElement('p');
-    let messageCardContent = document.createElement('p');
-    let messageCardTime = document.createElement('small');
+abstract class BaseMessage {
+    abstract toHtml(): string;
+    appendToDOM(): void {
+        $('.discussion').append(this.toHtml());
 
-    messageCardTime.classList.add('message-card-time');
-    messageCardContent.classList.add('message-card-content');
-    messageCardTitle.classList.add('message-card-title');
-    messageCard.classList.add('message-card', 'material-shadow');
-
-    messageCardTitle.innerHTML = message.title;
-    messageCardContent.innerHTML = message.content;
-    messageCardTime.innerHTML = message.time;
-
-    if (message.title === nickName) {
-        messageCard.classList.add('message-card-right');
-        messageCardTitle.innerHTML = "You";
+        //Scroll down to the last Message
+        let discussionDiv = document.querySelector('.discussion');
+        discussionDiv.lastElementChild.scrollIntoView();
     }
-
-    messageCard.append(messageCardTitle, messageCardContent, messageCardTime);
-
-    $('.discussion').append(messageCard);
 }
+
+class InfoMessage extends BaseMessage {
+    private body: string;
+    private type: string;
+    public static Type: InfoMessageType;
+    constructor(body: string, type: string) {
+        super();
+        this.body = body;
+        this.type = type;
+    }
+    toHtml(): string {
+        let output = `<div class="info-card card material-shadow ${this.type}">
+                             <p>${this.body}</p>
+                    </div> `
+        return output;
+    }
+}
+
+class UserMessage extends BaseMessage {
+    content: UserMessageContent;
+    constructor(content: UserMessageContent) {
+        super();
+        this.content = content;
+    }
+    toHtml(): string {
+
+        let you = "";
+        let right = "";
+
+        if (this.content.title === nickName) {
+            right = 'message-card-right';
+            you = "You";
+        }
+
+        let output = `
+        <div class="message-card material-shadow card ${right} ">
+            <p class="message-card-title">${you || this.content.title}</p>
+            <p class="message-card-content">${this.content.body}</p>
+            <small message-card-time>${this.content.time}</small>
+        </div>
+        `
+        return output;
+    }
+}
+
+
 
 //Sends the message to the server
 function sendMessage(room: any) {
-    let finalMessage: string = $('.message-input').val().toString();
+    let message: string = $('.message-input').val().toString();
 
     room.send('message', {
-        message: finalMessage,
+        message: message,
         nickName: nickName,
     });
 
@@ -84,10 +107,6 @@ const messages = {
 }
 
 async function start() {
-
-
-    // askNotificationPermission();
-
     while (nickName === "") {
         nickName = prompt("Please, enter your nickname");
     }
@@ -103,18 +122,19 @@ async function start() {
             joinOptions,
         );
 
+        localStorage.setItem("ROOM_ID",room.id);
+        localStorage.setItem("SESSION_ID",room.sessionId);
+
         room.onMessage(messages['NEW_USER'], (message: string) => {
-            bootstrapAlert(message, 'join');
+            new InfoMessage(message, InfoMessageType.Info).appendToDOM();
         });
 
-        room.onMessage(messages['MESSAGE_SENT'], (message: MessageCard) => {
-            appendMessage(message);
-            let discussionDiv = document.querySelector('.discussion');
-            discussionDiv.lastElementChild.scrollIntoView();
+        room.onMessage(messages['MESSAGE_SENT'], (message: UserMessageContent) => {
+            new UserMessage(message).appendToDOM();
         });
 
         room.onMessage(messages['USER_LEFT'], (message: string) => {
-            bootstrapAlert(message, 'left');
+            new InfoMessage(message, InfoMessageType.Danger).appendToDOM();
         });
 
         room.onMessage(messages['IS_TYPING'], (message: string) => {
